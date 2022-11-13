@@ -19,6 +19,7 @@ const scene = new THREE.Scene();
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
+const particleTexture = textureLoader.load('/textures/particles/2.png');
 
 /**
  * Test cube
@@ -26,7 +27,7 @@ const textureLoader = new THREE.TextureLoader();
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(2.1, 1, 1),
   new THREE.MeshBasicMaterial({
-    color: 'red',
+    color: 'white',
   })
 );
 
@@ -37,7 +38,7 @@ const cube = new THREE.Mesh(
 // const particlesGeometry = new THREE.SphereGeometry(1, 32, 32);
 
 const particlesGeometry = new THREE.BufferGeometry();
-const count = 500;
+const count = 5000;
 const positions = new Float32Array(count * 3);
 for (let i = 0; i < count * 3; i++) {
   positions[i] = (Math.random() - 0.5) * 10;
@@ -50,15 +51,21 @@ particlesGeometry.setAttribute(
 
 // Material
 const particlesMaterial = new THREE.PointsMaterial({
-  size: 0.02,
+  size: 0.06,
   sizeAttenuation: true,
+  color: '#ff88cc',
+  map: particleTexture,
+  alphaMap: particleTexture,
+  transparent: true,
+  alphaTest: 0.001,
+  depthTest: true,
+  // disable the depth write for the particles only
+  // wont't discard any pixel, so that the small particle in the back could be seen too
+  depthWrite: false,
 });
 
-// particlesMaterial.depthTest = false;
-// particlesMaterial.depthWrite = false;
-
 const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-scene.add(particles);
+scene.add(particles, cube);
 
 /**
  * Sizes
