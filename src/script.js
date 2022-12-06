@@ -34,22 +34,35 @@ const cube = new THREE.Mesh(
 // scene.add(cube);
 
 //---------------------------------------------------
+// Galaxy Generator
+//---------------------------------------------------
 
 const parameters = {};
 parameters.count = 1000;
 parameters.size = 0.01;
 parameters.sizeAttenuation = true;
 
-gui.add(parameters);
+let geometry = null;
+let positions = null;
+let material = null;
+let particles = null;
 
 const generateGalaxy = () => {
-  const geometry = new THREE.BufferGeometry();
+  // remove the old galaxies first
+  if (geometry) {
+    // dispose an object from memory
+    geometry.dispose();
+    material.dispose();
+    scene.remove(particles);
+  }
+
+  geometry = new THREE.BufferGeometry();
 
   //-------------
   // setup particle positions
   //-------------
 
-  const positions = new Float32Array(parameters.count * 3);
+  positions = new Float32Array(parameters.count * 3);
 
   for (let i = 0; i < parameters.count; i++) {
     const i3 = i * 3;
@@ -63,7 +76,7 @@ const generateGalaxy = () => {
   //-------------
   // setup particle materials
   //-------------
-  const material = new THREE.PointsMaterial({
+  material = new THREE.PointsMaterial({
     size: parameters.size,
     sizeAttenuation: parameters.sizeAttenuation,
     depthWrite: false,
@@ -74,11 +87,29 @@ const generateGalaxy = () => {
   // add points to scene
   //-------------
 
-  const particles = new THREE.Points(geometry, material);
+  particles = new THREE.Points(geometry, material);
 
   scene.add(particles);
 };
 generateGalaxy();
+
+//---------------------------------------------------
+// GUI
+//----------
+
+gui
+  .add(parameters, 'count')
+  .min(100)
+  .max(10000)
+  .step(100)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'size')
+  .min(0.001)
+  .max(0.1)
+  .step(0.001)
+  .onFinishChange(generateGalaxy);
 
 //---------------------------------------------------
 
