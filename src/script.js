@@ -15,7 +15,6 @@ const canvas = document.querySelector('canvas.webgl');
 
 // Scene
 const scene = new THREE.Scene();
-scene.background = new Color('#080209');
 
 /**
  * Textures
@@ -32,7 +31,56 @@ const cube = new THREE.Mesh(
   })
 );
 
-scene.add(cube);
+// scene.add(cube);
+
+//---------------------------------------------------
+
+const parameters = {};
+parameters.count = 1000;
+parameters.size = 0.01;
+parameters.sizeAttenuation = true;
+
+gui.add(parameters);
+
+const generateGalaxy = () => {
+  const geometry = new THREE.BufferGeometry();
+
+  //-------------
+  // setup particle positions
+  //-------------
+
+  const positions = new Float32Array(parameters.count * 3);
+
+  for (let i = 0; i < parameters.count; i++) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * 19;
+    positions[i3 + 1] = (Math.random() - 0.5) * 19;
+    positions[i3 + 2] = (Math.random() - 0.5) * 19;
+  }
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+  //-------------
+  // setup particle materials
+  //-------------
+  const material = new THREE.PointsMaterial({
+    size: parameters.size,
+    sizeAttenuation: parameters.sizeAttenuation,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  //-------------
+  // add points to scene
+  //-------------
+
+  const particles = new THREE.Points(geometry, material);
+
+  scene.add(particles);
+};
+generateGalaxy();
+
+//---------------------------------------------------
 
 /**
  * Sizes
