@@ -14,16 +14,19 @@ const gui = new dat.GUI();
 const canvas = document.querySelector('canvas.webgl');
 
 // Scene
-const scene = new THREE.Scene();
+const scene = new THREE.Scene({});
+scene.background = new THREE.Color('#031718');
 
 /**
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
+const starsTexture = textureLoader.load('/textures/particles/8.png');
 
-/**
- * Test cube
- */
+//============================================
+// Test Cube
+//============================================
+
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(2.1, 1, 1),
   new THREE.MeshBasicMaterial({
@@ -33,17 +36,30 @@ const cube = new THREE.Mesh(
 
 // scene.add(cube);
 
-//---------------------------------------------------
+//============================================
 // Galaxy Generator
-//---------------------------------------------------
+//============================================
+
+//-------------
+// parameters
+//-------------
 
 const parameters = {};
-parameters.count = 1000;
+parameters.count = 729600;
 parameters.size = 0.01;
 parameters.sizeAttenuation = true;
+parameters.radius = 11.4;
+parameters.branches = 6;
+parameters.spin = 0.58;
+parameters.randomness = 0.83;
+parameters.minRandomness = 0.45;
+parameters.scatter = 2;
+parameters.insideColor = '#ad4a14';
+parameters.outsideColor = '#124173';
 
 let geometry = null;
 let positions = null;
+let colors = null;
 let material = null;
 let particles = null;
 
@@ -63,15 +79,58 @@ const generateGalaxy = () => {
   //-------------
 
   positions = new Float32Array(parameters.count * 3);
+  colors = new Float32Array(parameters.count * 3);
 
   for (let i = 0; i < parameters.count; i++) {
     const i3 = i * 3;
-    positions[i3] = (Math.random() - 0.5) * 19;
-    positions[i3 + 1] = (Math.random() - 0.5) * 19;
-    positions[i3 + 2] = (Math.random() - 0.5) * 19;
+
+    const radius = Math.random() * parameters.radius;
+
+    // [0 - branches] repeated to loop over branches
+    const fullCircle = Math.PI * 2;
+    const fraction = (i % parameters.branches) / parameters.branches; // [0-1]
+    const branchAngel = fraction * fullCircle;
+
+    const spinAngel = radius * parameters.spin;
+
+    const inverseRadius =
+      (radius / parameters.radius - 1) * -1 + parameters.minRandomness;
+
+    // multiply by radius to randomize more as we go from the center
+    const randomX =
+      Math.pow(
+        Math.random() * parameters.randomness * inverseRadius,
+        parameters.scatter
+      ) * (Math.random() < 0.5 ? 1 : -1);
+    const randomY =
+      Math.pow(
+        Math.random() * parameters.randomness * inverseRadius,
+        parameters.scatter
+      ) * (Math.random() < 0.8 ? 1 : -1);
+    const randomZ =
+      Math.pow(
+        Math.random() * parameters.randomness * inverseRadius,
+        parameters.scatter
+      ) * (Math.random() < 0.2 ? 1 : -1);
+
+    positions[i3] = radius * Math.cos(branchAngel + spinAngel) + randomX;
+    positions[i3 + 1] = 0 + randomY;
+    positions[i3 + 2] = radius * Math.sin(branchAngel + spinAngel) + randomZ;
+
+    // colors
+    const insideColor = new THREE.Color(parameters.insideColor);
+    const outsideColor = new THREE.Color(parameters.outsideColor);
+
+    const mixedColor = insideColor.clone();
+    mixedColor.lerp(outsideColor, radius / parameters.radius);
+
+    colors[i3 + 0] = mixedColor.r;
+    colors[i3 + 1] = mixedColor.g;
+    colors[i3 + 2] = mixedColor.b;
   }
 
   geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
   //-------------
   // setup particle materials
@@ -81,6 +140,7 @@ const generateGalaxy = () => {
     sizeAttenuation: parameters.sizeAttenuation,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    vertexColors: true,
   });
 
   //-------------
@@ -93,14 +153,106 @@ const generateGalaxy = () => {
 };
 generateGalaxy();
 
-//---------------------------------------------------
+//============================================
+// generate starts
+//============================================
+
+//-------------
+// parameters
+//-------------
+
+parameters.starsCount = 21000;
+parameters.starsSize = 0.25;
+parameters.starsSizeAttenuation = true;
+parameters.starsRadius = 100;
+parameters.starsInsideColor = '#EDFFFF';
+parameters.starsOutsideColor = '#124173';
+
+let starsGeometry = null;
+let startsPositions = null;
+let startsColors = null;
+let startsMaterial = null;
+let startsParticles = null;
+
+const generateStars = () => {
+  if (starsGeometry) {
+    starsGeometry.dispose();
+    startsMaterial.dispose();
+    scene.remove(startsParticles);
+  }
+
+  starsGeometry = new THREE.BufferGeometry();
+
+  //-------------
+  // setup particle positions
+  //-------------
+
+  startsPositions = new Float32Array(parameters.starsCount * 3);
+  startsColors = new Float32Array(parameters.starsCount * 3);
+
+  for (let i = 0; i < parameters.starsCount; i++) {
+    const i3 = i * 3;
+
+    startsPositions[i3] = (Math.random() - 0.5) * parameters.starsRadius;
+    startsPositions[i3 + 1] = (Math.random() - 0.5) * parameters.starsRadius;
+    startsPositions[i3 + 2] = (Math.random() - 0.5) * parameters.starsRadius;
+
+    // colors
+    const insideColor = new THREE.Color(parameters.starsInsideColor);
+    const outsideColor = new THREE.Color(parameters.starsOutsideColor);
+
+    const mixedColor = insideColor.clone();
+    mixedColor.lerp(
+      outsideColor,
+      startsPositions[i3 + 1] / parameters.starsRadius
+    );
+
+    startsColors[i3 + 0] = mixedColor.r;
+    startsColors[i3 + 1] = mixedColor.g;
+    startsColors[i3 + 2] = mixedColor.b;
+  }
+
+  starsGeometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(startsPositions, 3)
+  );
+  starsGeometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(startsColors, 3)
+  );
+
+  //-------------
+  // setup particle materials
+  //-------------
+  startsMaterial = new THREE.PointsMaterial({
+    size: parameters.starsSize,
+    sizeAttenuation: parameters.starsSizeAttenuation,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true,
+    map: starsTexture,
+    alphaMap: starsTexture,
+  });
+
+  //-------------
+  // add points to scene
+  //-------------
+
+  startsParticles = new THREE.Points(starsGeometry, startsMaterial);
+
+  scene.add(startsParticles);
+};
+
+generateStars();
+
+//============================================
 // GUI
-//----------
+//============================================
 
 gui
   .add(parameters, 'count')
   .min(100)
-  .max(10000)
+  .max(1000000)
   .step(100)
   .onFinishChange(generateGalaxy);
 
@@ -110,6 +262,79 @@ gui
   .max(0.1)
   .step(0.001)
   .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'radius')
+  .min(0.1)
+  .max(20)
+  .step(0.1)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'branches')
+  .min(3)
+  .max(10)
+  .step(1)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'spin')
+  .min(-5)
+  .max(5)
+  .step(0.01)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'randomness')
+  .min(0.01)
+  .max(1)
+  .step(0.01)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'minRandomness')
+  .min(0.01)
+  .max(1)
+  .step(0.01)
+  .onFinishChange(generateGalaxy);
+
+gui
+  .add(parameters, 'scatter')
+  .min(1)
+  .max(10)
+  .step(0.01)
+  .onFinishChange(generateGalaxy);
+
+gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy);
+gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy);
+
+//------------------------
+
+gui
+  .add(parameters, 'starsCount')
+  .min(100)
+  .max(1000000)
+  .step(100)
+  .onFinishChange(generateStars);
+
+gui
+  .add(parameters, 'starsSize')
+  .min(0.001)
+  .max(1)
+  .step(0.001)
+  .onFinishChange(generateStars);
+
+gui.add(parameters, 'starsSizeAttenuation').onFinishChange(generateStars);
+
+gui
+  .add(parameters, 'starsRadius')
+  .min(0.1)
+  .max(20)
+  .step(0.1)
+  .onFinishChange(generateStars);
+
+gui.addColor(parameters, 'starsInsideColor').onFinishChange(generateStars);
+gui.addColor(parameters, 'starsOutsideColor').onFinishChange(generateStars);
 
 //---------------------------------------------------
 
@@ -145,7 +370,11 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   100
 );
+
+camera.zoom = 0.4;
 camera.position.z = 3;
+camera.rotation.set(Math.PI / -2, 0, Math.PI);
+
 scene.add(camera);
 
 // Controls
