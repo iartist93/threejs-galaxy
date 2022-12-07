@@ -47,6 +47,9 @@ const cube = new THREE.Mesh(
 const parameters = {};
 
 parameters.fov = 50;
+parameters.cameraX = 5.771607000682601;
+parameters.cameraY = 5.599076684299562;
+parameters.cameraZ = -6.1975053732192;
 
 parameters.count = 729600;
 parameters.size = 0.01;
@@ -85,6 +88,11 @@ const updateCamera = () => {
   console.log('=========> update camera called ');
 
   camera.fov = parameters.fov;
+  camera.position.set(
+    parameters.cameraX,
+    parameters.cameraY,
+    parameters.cameraZ
+  );
 
   // Update controls
   controls.update();
@@ -284,6 +292,24 @@ generateStars();
 //============================================
 
 gui.add(parameters, 'fov').min(1).max(200).step(1).onChange(updateCamera);
+gui
+  .add(parameters, 'cameraX')
+  .min(-20)
+  .max(20)
+  .step(0.001)
+  .onChange(updateCamera);
+gui
+  .add(parameters, 'cameraY')
+  .min(-20)
+  .max(20)
+  .step(0.001)
+  .onChange(updateCamera);
+gui
+  .add(parameters, 'cameraZ')
+  .min(-20)
+  .max(20)
+  .step(0.001)
+  .onChange(updateCamera);
 
 gui
   .add(parameters, 'count')
@@ -389,7 +415,7 @@ window.addEventListener('resize', () => {
 });
 
 camera.zoom = 0.4;
-camera.position.set(5.771607000682601, 5.599076684299562, -6.1975053732192);
+camera.position.set(parameters.cameraX, parameters.cameraY, parameters.cameraZ);
 camera.rotateX(-2.2076337733580824);
 camera.rotateY(0.5099745639989409);
 camera.rotateZ(2.558226355119806);
