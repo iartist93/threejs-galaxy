@@ -2,7 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'lil-gui';
-import { Color } from 'three';
+import { Color, Vector3 } from 'three';
 
 /**
  * Base
@@ -45,6 +45,9 @@ const cube = new THREE.Mesh(
 //-------------
 
 const parameters = {};
+
+parameters.fov = 50;
+
 parameters.count = 729600;
 parameters.size = 0.01;
 parameters.sizeAttenuation = true;
@@ -151,20 +154,20 @@ const generateGalaxy = () => {
 
   scene.add(particles);
 };
-generateGalaxy();
 
-//============================================
+//=============================================================
+//
 // generate starts
-//============================================
+//
+//=============================================================
 
 //-------------
-// parameters
-//-------------
+// stars parameters
 
-parameters.starsCount = 21000;
-parameters.starsSize = 0.25;
+parameters.starsCount = 10000;
+parameters.starsSize = 0.447;
+parameters.starsRadius = 145.9;
 parameters.starsSizeAttenuation = true;
-parameters.starsRadius = 100;
 parameters.starsInsideColor = '#EDFFFF';
 parameters.starsOutsideColor = '#124173';
 
@@ -183,9 +186,8 @@ const generateStars = () => {
 
   starsGeometry = new THREE.BufferGeometry();
 
-  //-------------
-  // setup particle positions
-  //-------------
+  //-------------------------
+  // setup particles array
 
   startsPositions = new Float32Array(parameters.starsCount * 3);
   startsColors = new Float32Array(parameters.starsCount * 3);
@@ -223,7 +225,7 @@ const generateStars = () => {
 
   //-------------
   // setup particle materials
-  //-------------
+
   startsMaterial = new THREE.PointsMaterial({
     size: parameters.starsSize,
     sizeAttenuation: parameters.starsSizeAttenuation,
@@ -236,18 +238,19 @@ const generateStars = () => {
 
   //-------------
   // add points to scene
-  //-------------
 
   startsParticles = new THREE.Points(starsGeometry, startsMaterial);
-
   scene.add(startsParticles);
 };
 
+generateGalaxy();
 generateStars();
 
 //============================================
 // GUI
 //============================================
+
+gui.add(parameters, 'fov').min(1).max(200).step(1).onFinishChange(updateCamera);
 
 gui
   .add(parameters, 'count')
@@ -329,7 +332,7 @@ gui.add(parameters, 'starsSizeAttenuation').onFinishChange(generateStars);
 gui
   .add(parameters, 'starsRadius')
   .min(0.1)
-  .max(20)
+  .max(200)
   .step(0.1)
   .onFinishChange(generateStars);
 
@@ -346,6 +349,17 @@ const sizes = {
   height: window.innerHeight,
 };
 
+/**
+ * Camera
+ */
+// Base camera
+const camera = new THREE.PerspectiveCamera(
+  parameters.fov,
+  sizes.width / sizes.height,
+  0.1,
+  100
+);
+
 window.addEventListener('resize', () => {
   // Update sizes
   sizes.width = window.innerWidth;
@@ -360,26 +374,23 @@ window.addEventListener('resize', () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  sizes.width / sizes.height,
-  0.1,
-  100
-);
-
 camera.zoom = 0.4;
-camera.position.z = 3;
-camera.rotation.set(Math.PI / -2, 0, Math.PI);
+camera.position.set(5.771607000682601, 5.599076684299562, -6.1975053732192);
+camera.rotateX(-2.2076337733580824);
+camera.rotateY(0.5099745639989409);
+camera.rotateZ(2.558226355119806);
+
+// camera.up.set(0, 0, 1);
+// camera.rotation.set(Math.PI / -2, 0, 0);
 
 scene.add(camera);
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
+controls.addEventListener('change', (e) => {
+  console.log('the camera changed', camera.position, camera.rotation);
+});
 
 /**
  * Renderer
@@ -390,6 +401,12 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+function updateCamera() {
+  // Update controls
+  controls.update();
+  camera.updateProjectionMatrix();
+}
+
 /**
  * Animate
  */
@@ -399,9 +416,7 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
 
   // Update controls
-  controls.update();
-
-  camera.updateProjectionMatrix();
+  updateCamera();
 
   // Render
   renderer.render(scene, camera);
