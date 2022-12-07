@@ -60,6 +60,39 @@ parameters.scatter = 2;
 parameters.insideColor = '#ad4a14';
 parameters.outsideColor = '#124173';
 
+//-------------------------------------------
+
+/**
+ * Sizes
+ */
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+/**
+ * Camera
+ */
+// Base camera
+const camera = new THREE.PerspectiveCamera(
+  parameters.fov,
+  sizes.width / sizes.height,
+  0.1,
+  100
+);
+
+const updateCamera = () => {
+  console.log('=========> update camera called ');
+
+  camera.fov = parameters.fov;
+
+  // Update controls
+  controls.update();
+  camera.updateProjectionMatrix();
+};
+
+//-------------------------------------------
+
 let geometry = null;
 let positions = null;
 let colors = null;
@@ -250,7 +283,7 @@ generateStars();
 // GUI
 //============================================
 
-gui.add(parameters, 'fov').min(1).max(200).step(1).onFinishChange(updateCamera);
+gui.add(parameters, 'fov').min(1).max(200).step(1).onChange(updateCamera);
 
 gui
   .add(parameters, 'count')
@@ -341,25 +374,6 @@ gui.addColor(parameters, 'starsOutsideColor').onFinishChange(generateStars);
 
 //---------------------------------------------------
 
-/**
- * Sizes
- */
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(
-  parameters.fov,
-  sizes.width / sizes.height,
-  0.1,
-  100
-);
-
 window.addEventListener('resize', () => {
   // Update sizes
   sizes.width = window.innerWidth;
@@ -400,12 +414,6 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-function updateCamera() {
-  // Update controls
-  controls.update();
-  camera.updateProjectionMatrix();
-}
 
 /**
  * Animate
