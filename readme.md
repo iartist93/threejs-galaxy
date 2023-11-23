@@ -14,3 +14,11 @@ npm run dev
 # Build for production in the dist/ directory
 npm run build
 ```
+
+----
+## In this project
+
+- Galaxy
+- I added some pre-sets
+
+----

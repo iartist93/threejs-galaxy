@@ -22,6 +22,7 @@ scene.background = new THREE.Color('#031718');
  */
 const textureLoader = new THREE.TextureLoader();
 const starsTexture = textureLoader.load('/textures/particles/8.png');
+const galaxyTexture = textureLoader.load('/textures/particles/4.png');
 
 //============================================
 // Test Cube
@@ -51,8 +52,8 @@ parameters.cameraX = 5.771607000682601;
 parameters.cameraY = 5.599076684299562;
 parameters.cameraZ = -6.1975053732192;
 
-parameters.count = 729600;
-parameters.size = 0.01;
+parameters.count = 1000000;
+parameters.size = 0.016;
 parameters.sizeAttenuation = true;
 parameters.radius = 11.4;
 parameters.branches = 6;
@@ -88,11 +89,11 @@ const updateCamera = () => {
   console.log('=========> update camera called ');
 
   camera.fov = parameters.fov;
-  camera.position.set(
-    parameters.cameraX,
-    parameters.cameraY,
-    parameters.cameraZ
-  );
+  // camera.position.set(
+  //   parameters.cameraX,
+  //   parameters.cameraY,
+  //   parameters.cameraZ
+  // );
 
   // Update controls
   controls.update();
@@ -185,6 +186,8 @@ const generateGalaxy = () => {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexColors: true,
+    map: galaxyTexture,
+    alphaMap: galaxyTexture,
   });
 
   //-------------
