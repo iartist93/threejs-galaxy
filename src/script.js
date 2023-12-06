@@ -4,6 +4,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'lil-gui';
 import { Color, Vector3 } from 'three';
 
+// We have let vite load the asset and bundle it for us, as /src doesn't exist in the final build
+import texture8 from "./assets/textures/particles/8.png";
+import texture4 from "./assets/textures/particles/4.png";
+
+console.log("texture8", texture8);
+
+
 /**
  * Base
  */
@@ -21,8 +28,8 @@ scene.background = new THREE.Color('#031718');
  * Textures
  */
 const textureLoader = new THREE.TextureLoader();
-const starsTexture = textureLoader.load('/textures/particles/8.png');
-const galaxyTexture = textureLoader.load('/textures/particles/4.png');
+const starsTexture = textureLoader.load(texture8);
+const galaxyTexture = textureLoader.load(texture4);
 
 //============================================
 // Test Cube
