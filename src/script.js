@@ -86,7 +86,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 
 const updateCamera = () => {
-  console.log('=========> update camera called ');
+  // console.log('=========> update camera called ');
 
   camera.fov = parameters.fov;
   // camera.position.set(
@@ -432,7 +432,7 @@ scene.add(camera);
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.addEventListener('change', (e) => {
-  console.log('the camera changed', camera.position, camera.rotation);
+  // console.log('the camera changed', camera.position, camera.rotation);
 });
 
 /**
