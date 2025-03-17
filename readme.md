@@ -1,10 +1,10 @@
 # Three.js Journey
 
-## Setup
-Download [Node.js](https://nodejs.org/en/download/).
-Run this followed commands:
+ThreeJS Project to simulate galaxy using particles, you can play with the top right GUI to create your own custom galaxy shape anc color.
 
-``` bash
+## Setup
+
+```bash
 # Install dependencies (only the first time)
 npm install
 
@@ -15,10 +15,8 @@ npm run dev
 npm run build
 ```
 
-----
-## In this project
+---
 
-- Galaxy
-- I added some pre-sets
+## Live Demo
 
-----
+[Live Demo](https://acrossverse.netlify.app//galaxy/)
